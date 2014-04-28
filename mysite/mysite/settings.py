@@ -12,6 +12,27 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+# Make my project portable
+SETTINGS_DIR = os.path.dirname(__file__)
+PROJECT_PATH = os.path.join(SETTINGS_DIR,os.pardir)
+PROJECT_PATH = os.path.abspath(PROJECT_PATH)
+TEMPLATE_PATH = os.path.join(PROJECT_PATH, 'templates')
+
+# Template Locations
+TEMPLATE_DIRS = (
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+    TEMPLATE_PATH,
+)
+
+STATIC_PATH = os.path.join(PROJECT_PATH,'static')
+STATIC_URL = '/static/' # You may find this is already defined as such.
+# Static file Locations
+STATICFILES_DIRS = (
+    STATIC_PATH,
+)
+LOGIN_URL = '/idp/login/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -36,7 +57,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'polls',
+    'idp',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -55,7 +76,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
+#this is test server
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -63,6 +84,19 @@ DATABASES = {
     }
 }
 
+#this is deployment server
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'USER': 'idpserver',
+        'PASSWORD':,
+        'HOST':,
+        'PORT':,
+    }
+}
+'''
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
@@ -81,3 +115,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+

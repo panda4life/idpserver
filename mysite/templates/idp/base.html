@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="{% static 'css/bootstrap-fluid-adj.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
+    <link href="{% static 'css/bootstrap-responsive.css' %}" rel="stylesheet">
+
+    <title>IDP - {% block title %}IDP Sequence Parameter Computation Server{% endblock %}</title>
+</head>
+
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+           <div class="navbar-inner">
+               <div class="container">
+                   <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                       <span class="icon-bar"></span>
+                       <span class="icon-bar"></span>
+                       <span class="icon-bar"></span>
+                   </button>
+                   <a class="brand" href="/idp/">IDP</a>
+
+                   <div class="nav-collapse collapse">
+                       <ul class="nav pull-right">
+                           {% if user.is_authenticated %}
+                            <li class="navbar-text">Welcome, {{ user.username }}!</li>
+                            <li><a href="/idp/logout/">Logout</a></li>
+                           {% else %}
+                            <li><a href="/idp/register/">Register</a></li>
+                            <li><a href="/idp/login/">Login</a></li>
+                           {% endif %}
+                       </ul>
+                       <ul class="nav">
+                           {% if user.is_authenticated %}
+                           {% endif %}
+                           <li><a href="/idp/about/">About</a></li>
+                       </ul>
+                   </div>
+                   <!--/.nav-collapse -->
+               </div>
+           </div>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span3">
+                    <div class="well sidebar-nav">
+                        {% if user.is_authenticated %}
+                        <h3>Account Management</h3>
+                        <li><a href="/idp/profile/">Profile</a></li>
+                        <li><a href="/idp/add_sequence/">Add Sequences</a></li>
+                        <li><a href="/idp/joblist/">Current Jobs</a></li>
+                        <br><h3>Sequence Library</h3>
+                        <li><a href="/idp/seqprop/">Sequence Properties</a></li>
+                        <li><a href="/idp/seqpropdist/">Property Distributions</a></li>
+                        <li><a href="/idp/wl/">Kappa Density of States</a></li>
+                        <li><a href="/idp/hetero/">Heterogeneity</a></li>
+                        <br><h3>Download your Data</h3>
+                        <li><a href="/idp/downseqprop/">Property Data</a></li>
+                        <li><a href="/idp/downseqpropdist/">Distribution Charts</a></li>
+                        <li><a href="/idp/downwl/">Kappa Density of States</a></li>
+                        <li><a href="/idp/downhetero/">Heterogeneity</a></li>
+                        {% endif %}
+                    </div>
+                    <!--/.well -->
+                </div>
+                <!--/span-->
+                <div class="span9">
+                    {% block body_block %}
+                    {% endblock %}
+                </div>
+                <!--/span-->
+            </div>
+            <!--/row-->
+        </div>
+        <!--/.fluid-container-->
+
+        <hr>
+        <footer>
+            <div class="container">
+                <p>&copy; Pappu Lab: IDP Sequence Parameter Computation Server</p>
+            </div>
+        </footer>
+        <script src="{% static 'js/jquery-2.1.0.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    </body>
+</html>
