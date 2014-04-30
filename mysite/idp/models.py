@@ -23,7 +23,7 @@ class Sequence(models.Model):
     seqProc = models.BooleanField(default = 0) #Boolean that determines whether the sequence had its parameters solved and stored
     jobProc = models.BooleanField(default = 0) #Boolean that determines whether there are jobs currently running
     class Meta:
-        unique_together = (('user', 'seq'),('tag','name'))
+        unique_together = (('user', 'seq'))
     def __unicode__(self):
         if(self.name == ''):
             return self.seq
@@ -52,7 +52,8 @@ class Sequence_jobs(models.Model):
     status = models.CharField(max_length = 2, default = 'l')
     progressFile = models.FilePathField(max_length = 512, default = '/output/progress.txt')
     outdir = models.FilePathField(max_length = 512, default = '/output/',allow_folders = True, allow_files = False)
-
+    def __unicode__(self):
+        return '%s %d %s' % (self.user.username,self.seq.pk,self.jobType)
 '''
 class Sequence_jobdata(models.Model):
     seq = models.ManyToOneField(Sequence)

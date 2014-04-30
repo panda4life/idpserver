@@ -102,61 +102,58 @@ class tagForm(forms.Form):
     def save(self):
 '''
 class wl_JobForm(forms.Form):
-    '''
-    queryset = Sequence.objects.all()
-    tagSet = set()
-    for sequences in queryset:
-        tagSet.add(sequences.tag)
-
-    tags = forms.MultipleChoiceField(choices = tagSet)
-    seq = forms.ModelChoiceField(widget=forms.HiddenInput())
-    '''
     seq = forms.ModelChoiceField(Sequence.objects.none(), help_text = 'Select sequence to solve for Kappa DoS')
     #seq = forms.ModelMultipleChoiceField(Sequence.objects.all())
     genPermutants = forms.NullBooleanField(help_text='Would you like to generate Kappa sequence permutants?')
 
     def __init__(self,user, *args, **kwargs):
-        super(wl_JobForm,self).__init__()
+        super(wl_JobForm,self).__init__(*args, **kwargs)
         self.user = user
-        #self.fields['seq'].queryset = Sequence.objects.all()
+        #q = Sequence.objects.all()
         q = Sequence.objects.filter(user = self.user)
         self.fields['seq'].queryset = q.extra(order_by = ['tag'])
 
     def launchJob(self):
         seqchoice = self.cleaned_data['seq']
         newJob = Sequence_jobs(seq = seqchoice, user = self.user)
-        if(self.cleaned_data['genPurmutants']):
+        if(self.cleaned_data['genPermutants']):
             newJob.jobType = 'wlp'
             newJob.jobParameters = ''
         else:
             newJob.jobType = 'wl'
             newJob.jobParameters = ''
-
         newJob.status = 'l'
         import os
         from django.conf import settings
-        newJob.outdir = os.path.join(settings.DAEMON_OUT_PATH,"%d/%d/%s/" % newJob.user.pk, newJob.seq.pk, newJob.jobType)
-        print(newJob.outdir)
+        from extraFuncs import create_path
+        newJob.outdir = os.path.join(settings.DAEMON_OUT_PATH,os.path.normpath("%d/%d/%s/" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)))
+        create_path(newJob.outdir)
         newJob.progressFile = os.path.join(newJob.outdir, 'progress.txt')
-        inputFilePath = "%s%d_%d_%s" % settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType
+        inputFilePath = os.path.normpath("%s/%d_%d_%s" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
+        create_path(os.path.dirname(inputFilePath))
+        if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
+            newJob.status = 'ar'
+            return newJob
+        newJob.save()
         with open(inputFilePath, 'w') as f:
             f.write('JobID %d\n' % newJob.pk)
             f.write('UserID %d\n' % newJob.user.pk)
             f.write('JobType %s\n' % newJob.pk)
             f.write('JobParameters %s\n' % newJob.jobParameters)
-            f.write('OutDir %d\n' % newJob.outdir)
+            f.write('OutDir %s\n' % newJob.outdir)
             f.close()
-        newJob.save()
-        return newJob.user
+
+        return newJob
 
 class hetero_JobForm(forms.Form):
     seq = forms.ModelChoiceField(Sequence.objects.none(), help_text = 'Select sequence to generate PDB Library')
 
-    def __init__(self,user):
-        super(wl_JobForm,self).__init__()
+    def __init__(self,user, *args, **kwargs):
+        super(hetero_JobForm,self).__init__(*args, **kwargs)
         self.user = user
-        import operator
-        self.fields['seq'].queryset = sorted(Sequence.objects.filter(user = user),key = operator.attrgetter('tag'))
+        #q = Sequence.objects.all()
+        q = Sequence.objects.filter(user = self.user)
+        self.fields['seq'].queryset = q.extra(order_by = ['tag'])
 
     def launchJob(self):
         seqchoice = self.cleaned_data['seq']
@@ -166,15 +163,33 @@ class hetero_JobForm(forms.Form):
         newJob.status = 'l'
         import os
         from django.conf import settings
-        newJob.outdir = os.path.join(settings.DAEMON_OUT_PATH,"%d/%d/%s/" % newJob.user.pk, newJob.seq.pk, newJob.jobType)
+        from extraFuncs import create_path
+        newJob.outdir = os.path.join(settings.DAEMON_OUT_PATH,os.path.normpath("%d/%d/%s/" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)))
+        create_path(newJob.outdir)
         newJob.progressFile = os.path.join(newJob.outdir, 'progress.txt')
-        inputFilePath = "%s%d_%d_%s" % settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType
+        inputFilePath = os.path.normpath("%s/%d_%d_%s" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
+        create_path(os.path.dirname(inputFilePath))
+        if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
+            newJob.status = 'ar'
+            return newJob
+        newJob.save()
         with open(inputFilePath, 'w') as f:
             f.write('JobID %d\n' % newJob.pk)
             f.write('UserID %d\n' % newJob.user.pk)
             f.write('JobType %s\n' % newJob.pk)
             f.write('JobParameters %s\n' % newJob.jobParameters)
-            f.write('OutDir %d\n' % newJob.outdir)
+            f.write('OutDir %s\n' % newJob.outdir)
             f.close()
-        newJob.save()
-        return newJob.user
+
+        return newJob
+
+class tagForm(forms.Form):
+    tag = forms.MultipleChoiceField(choices = None)
+    def __init__(self,user, *args, **kwargs):
+        super(tagForm,self).__init__(*args, **kwargs)
+        self.user = user
+        q = Sequence.objects.filter(user = self.user)
+        tagSet = set()
+        for possibleSeqs in q:
+            tagSet.add(possibleSeqs.tag)
+        self.fields['tag'].queryset = tagSet

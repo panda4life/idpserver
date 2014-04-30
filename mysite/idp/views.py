@@ -133,7 +133,6 @@ def user_logout(request):
     return HttpResponseRedirect('/idp/')
 
 
-from models import Sequence
 from forms import MultiSequenceForm
 @login_required
 def addsequence(request):
@@ -142,6 +141,7 @@ def addsequence(request):
 
     if request.method == 'POST': # If the form has been submitted...
         seqform = MultiSequenceForm(request.user,request.POST) # A form bound to the POST data
+        print(request.POST)
         if seqform.is_valid(): # All validation rules pass
             user = seqform.save()
             return HttpResponseRedirect('/idp/profile') # Redirect after POST
@@ -159,7 +159,10 @@ def launch_wljob(request):
     if request.method == 'POST':
         jobForm = wl_JobForm(request.user, request.POST)
         if jobForm.is_valid():
-            user = jobForm.launchJob()
+            job = jobForm.launchJob()
+            if(job.status == 'ar'):
+                errmsg = 'Specified wang landau job for %s is already running' % (job.seq.seq)
+                return render_to_response('idp/error.html', {'error': errmsg})
             return HttpResponseRedirect('/idp/joblist')
         else:
             if(not jobForm.is_bound):
@@ -170,15 +173,21 @@ def launch_wljob(request):
     return render_to_response('idp/wl.html', {'form': jobForm},context)
 
 from forms import hetero_JobForm
+@login_required
 def launch_heterojob(request):
     context = RequestContext(request)
-
     if request.method == 'POST':
         jobForm = hetero_JobForm(request.user, request.POST)
         if jobForm.is_valid():
-            user = jobForm.launchJob()
+            job = jobForm.launchJob()
+            if(job.status == 'ar'):
+                errmsg = 'Specified PDB library job for %s is already running' % (job.seq.seq)
+                return render_to_response('idp/error.html', {'error': errmsg})
             return HttpResponseRedirect('/idp/joblist')
         else:
-            jobForm = hetero_JobForm(request.user, request.POST)
-
-    return render_to_response('idp/wl.html', {'form': hetero_JobForm},context)
+            if(not jobForm.is_bound):
+                print('not bound')
+            print('invalid')
+    else:
+        jobForm = hetero_JobForm(request.user)
+    return render_to_response('idp/hetero.html', {'form': jobForm},context)
