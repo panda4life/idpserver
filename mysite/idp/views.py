@@ -123,7 +123,6 @@ def user_login(request):
         return render_to_response('idp/login.html', {}, context)
 
 from django.contrib.auth import logout
-
 # Use the login_required() decorator to ensure only those logged in can access the view.
 @login_required
 def user_logout(request):
@@ -134,9 +133,7 @@ def user_logout(request):
     return HttpResponseRedirect('/idp/')
 
 
-
-import idp.computation as comp
-from models import Sequence, Sequence_seqdata
+from models import Sequence
 from forms import MultiSequenceForm
 @login_required
 def addsequence(request):
@@ -146,49 +143,42 @@ def addsequence(request):
     if request.method == 'POST': # If the form has been submitted...
         seqform = MultiSequenceForm(request.user,request.POST) # A form bound to the POST data
         if seqform.is_valid(): # All validation rules pass
-            sequence = seqform.save()
-            return HttpResponseRedirect('/idp/') # Redirect after POST
+            user = seqform.save()
+            return HttpResponseRedirect('/idp/profile') # Redirect after POST
     else:
         seqform = MultiSequenceForm(request.user) # An unbound form
-
+    print(seqform.visible_fields)
     return render_to_response('idp/add_sequence.html', {'form': seqform},context)
 
-'''
+
+from forms import wl_JobForm
 @login_required
-def addsequence(request):
-    # Like before, obtain the context for the user's request.
+def launch_wljob(request):
     context = RequestContext(request)
-    if request.method == 'POST': # If the form has been submitted...
-        form = SequenceForm(request.POST) # A form bound to the POST data
-        if form.is_valid(): # All validation rules pass
-            seqlist = form.cleaned_data['seqlist']
-            tagin = form.cleaned_data['tag']
-            from django.utils import timezone
-            for seqin in seqlist.split('\n'):
-                newSeq = comp.Sequence(seqin)
-                newSeqDB = Sequence(seq = seqin,
-                                    tag = tagin,
-                                    submissionDate = timezone.now(),
-                                    seqProc = False,
-                                    jobProc = False)
-                newSeqDB.save()
-                newSeqDataDB = Sequence_seqdata(seq = newSeqDB.pk,
-                                                fplus = newSeq.Fplus(),
-                                                fminus = newSeq.Fminus(),
-                                                FCR = newSeq.FCR(),
-                                                NCPR = newSeq.NCPR(),
-                                                meanH = newSeq.meanHydropathy(),
-                                                sigma = newSeq.sigma(),
-                                                delta = newSeq.delta(),
-                                                dmax = newSeq.deltaMax(),
-                                                kappa = newSeq.kappa())
-                newSeqDataDB.save()
-                newSeqDB.seqProc = True
-                newSeqDB.save()
-            return HttpResponseRedirect('/thanks/') # Redirect after POST
+
+    if request.method == 'POST':
+        jobForm = wl_JobForm(request.user, request.POST)
+        if jobForm.is_valid():
+            user = jobForm.launchJob()
+            return HttpResponseRedirect('/idp/joblist')
+        else:
+            if(not jobForm.is_bound):
+                print('not bound')
+            print('invalid')
     else:
-        form = SequenceForm() # An unbound form
+        jobForm = wl_JobForm(request.user)
+    return render_to_response('idp/wl.html', {'form': jobForm},context)
 
-    return render(request, 'idp/add_sequence.html', {'form': form},context)
+from forms import hetero_JobForm
+def launch_heterojob(request):
+    context = RequestContext(request)
 
-'''
+    if request.method == 'POST':
+        jobForm = hetero_JobForm(request.user, request.POST)
+        if jobForm.is_valid():
+            user = jobForm.launchJob()
+            return HttpResponseRedirect('/idp/joblist')
+        else:
+            jobForm = hetero_JobForm(request.user, request.POST)
+
+    return render_to_response('idp/wl.html', {'form': hetero_JobForm},context)

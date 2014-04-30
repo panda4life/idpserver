@@ -16,15 +16,18 @@ class UserProfile(models.Model):
 
 class Sequence(models.Model):
     seq = models.CharField(max_length=512, db_index=False)
+    name = models.CharField(max_length=128, default = '')
     tag = models.CharField(max_length=128)
     user = models.ForeignKey(User)
     submissionDate = models.DateField(default = '1900-01-01')
     seqProc = models.BooleanField(default = 0) #Boolean that determines whether the sequence had its parameters solved and stored
     jobProc = models.BooleanField(default = 0) #Boolean that determines whether there are jobs currently running
     class Meta:
-        unique_together = (('user', 'seq'),)
+        unique_together = (('user', 'seq'),('tag','name'))
     def __unicode__(self):
-        return self.seq
+        if(self.name == ''):
+            return self.seq
+        return self.name
 
 class Sequence_seqdata(models.Model):
     seq = models.OneToOneField(Sequence)
@@ -38,6 +41,18 @@ class Sequence_seqdata(models.Model):
     delta = models.FloatField(default=0)
     dmax = models.FloatField(default=0)
     kappa = models.FloatField(default=0)
+    def __unicode__(self):
+        return self.seq.__unicode__()
+
+class Sequence_jobs(models.Model):
+    seq = models.ForeignKey(Sequence)
+    user = models.ForeignKey(User)
+    jobType = models.CharField(max_length = 128, default = '')
+    jobParameters = models.CharField(max_length = 1024, )
+    status = models.CharField(max_length = 2, default = 'l')
+    progressFile = models.FilePathField(max_length = 512, default = '/output/progress.txt')
+    outdir = models.FilePathField(max_length = 512, default = '/output/',allow_folders = True, allow_files = False)
+
 '''
 class Sequence_jobdata(models.Model):
     seq = models.ManyToOneField(Sequence)

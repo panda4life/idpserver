@@ -1,13 +1,13 @@
 {% extends 'idp/base.html' %}
 
-{% block title %}Analyze Sequences{% endblock %}
+{% block title %}Solve DoS for a Sequence{% endblock %}
 
 {% block body_block %}
 <div class="hero-unit">
-    <h1>Add sequences for Analysis</h1>
+    <h1>Launch a Wang Landau Job to compute Kappa Density of States</h1>
     <br/>
     <div class="container">
-        <form class="span6" id="sequence_form" method="post" action="/idp/add_sequence/">
+        <form class="span6" id="wl_form" method="post" action="/idp/wl/">
             {% csrf_token %}
             {% for hidden in form.hidden_fields %}
             {{ hidden }}

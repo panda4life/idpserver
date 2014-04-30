@@ -14,4 +14,6 @@ urlpatterns = patterns('',
         url(r'^login/$', views.user_login, name='login'),
         url(r'^logout/$', views.user_logout, name='logout'),
         url(r'^add_sequence/', views.addsequence, name='add_sequence'),
-        url(r'^about/', views.about, name='about'),)
+        url(r'^about/', views.about, name='about'),
+        url(r'^wl/', views.launch_wljob, name='wl'),
+        url(r'^hetero/', views.launch_heterojob, name='hetero'),)

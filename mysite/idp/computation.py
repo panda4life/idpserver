@@ -271,6 +271,8 @@ class Sequence:
         return self.dmax
 
     def kappa(self):
+        if(self.deltaMax() == 0):
+            return 1
         return self.delta()/self.deltaMax()
 
     def swapRes(self,index1,index2):

@@ -34,6 +34,13 @@ STATICFILES_DIRS = (
 )
 LOGIN_URL = '/idp/login/'
 
+#this is for testing
+DAEMON_IN_PATH = os.path.join(PROJECT_PATH,'input')
+DAEMON_OUT_PATH = os.path.join(PROJECT_PATH,'output')
+
+#this is for deployment
+DAEMON_IN_PATH = '/input/'
+DAEMON_OUT_PATH = '/output/'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
