@@ -162,7 +162,7 @@ def launch_wljob(request):
             job = jobForm.launchJob()
             if(job.status == 'ar'):
                 errmsg = 'Specified wang landau job for %s is already running' % (job.seq.seq)
-                return render_to_response('idp/error.html', {'error': errmsg})
+                return render_to_response('idp/error.html', {'errmsg': errmsg})
             return HttpResponseRedirect('/idp/joblist')
         else:
             if(not jobForm.is_bound):
@@ -182,7 +182,7 @@ def launch_heterojob(request):
             job = jobForm.launchJob()
             if(job.status == 'ar'):
                 errmsg = 'Specified PDB library job for %s is already running' % (job.seq.seq)
-                return render_to_response('idp/error.html', {'error': errmsg})
+                return render_to_response('idp/error.html', {'errmsg': errmsg})
             return HttpResponseRedirect('/idp/joblist')
         else:
             if(not jobForm.is_bound):
@@ -191,3 +191,24 @@ def launch_heterojob(request):
     else:
         jobForm = hetero_JobForm(request.user)
     return render_to_response('idp/hetero.html', {'form': jobForm},context)
+    
+@login_required
+def profile(request):
+    context = RequestContext(request)
+    return render_to_response('idp/profile.html',{},context)
+    
+@login_required
+def joblist(request):
+    context = RequestContext(request)
+    return render_to_response('idp/joblist.html',{},context)
+    
+@login_required
+def seqprop(request):
+    context = RequestContext(request)
+    return render_to_response('idp/seqprop.html',{},context)
+    
+@login_required
+def seqpropdist(request):
+    context = RequestContext(request)
+    return render_to_response('idp/seqpropdist.html',{},context)
+    

@@ -41,6 +41,10 @@ DAEMON_OUT_PATH = os.path.join(PROJECT_PATH,'output')
 #this is for deployment
 #DAEMON_IN_PATH = '/input/'
 #DAEMON_OUT_PATH = '/output/'
+
+# Paths to auxilary analysis programs
+CAMPARI_PATH = os.path.abspath('/packages/campari/bin/x86_64/campari')
+WL_PATH = os.path.abspath('/packages/FIXMELATER')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 

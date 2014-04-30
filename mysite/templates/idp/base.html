@@ -7,7 +7,8 @@
     <link href="{% static 'css/bootstrap-fluid-adj.css' %}" rel="stylesheet">
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
     <link href="{% static 'css/bootstrap-responsive.css' %}" rel="stylesheet">
-
+    {% block extracss %}
+    {% endblock %}
     <title>IDP - {% block title %}IDP Sequence Parameter Computation Server{% endblock %}</title>
 </head>
 
@@ -45,9 +46,9 @@
 
         <div class="container-fluid">
             <div class="row-fluid">
+                {% if user.is_authenticated %}
                 <div class="span3">
                     <div class="well sidebar-nav">
-                        {% if user.is_authenticated %}
                         <h3>Account Management</h3>
                         <li><a href="/idp/profile/">Manage Sequences</a></li>
                         <li><a href="/idp/add_sequence/">Add Sequences</a></li>
@@ -59,16 +60,21 @@
                         <li><a href="/idp/hetero/">Heterogeneity</a></li>
                         <br><h3>Download your Data</h3>
                         <li><a href="/idp/downwl/">Kappa Density of States</a></li>
-                        <li><a href="/idp/downhetero/">Heterogeneity</a></li>
-                        {% endif %}
+                        <li><a href="/idp/downhetero/">Heterogeneity</a></li>          
                     </div>
                     <!--/.well -->
                 </div>
+                {% endif %}
                 <!--/span-->
+                {% if user.is_authenticated %}
                 <div class="span9">
+                {% else %}
+                <div class="span12">
+                {% endif %}
                     {% block body_block %}
                     {% endblock %}
                 </div>
+
                 <!--/span-->
             </div>
             <!--/row-->

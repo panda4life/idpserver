@@ -1,0 +1,22 @@
+{% extends 'idp/base.html' %}
+
+{% block extracss %}
+{% load static %}
+<link href="{% static 'css/stretchContainers.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}{% endblock %}
+
+{% block body_block %}
+<div class="hero-unit">
+    <div class="stretch30">
+        testing
+    </div>
+    <div class="stretch30">
+        testing2
+    </div>
+    <div class="stretch40">
+        testing3
+    </div>
+</div>
+{% endblock %}

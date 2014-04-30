@@ -16,4 +16,9 @@ urlpatterns = patterns('',
         url(r'^add_sequence/', views.addsequence, name='add_sequence'),
         url(r'^about/', views.about, name='about'),
         url(r'^wl/', views.launch_wljob, name='wl'),
-        url(r'^hetero/', views.launch_heterojob, name='hetero'),)
+        url(r'^hetero/', views.launch_heterojob, name='hetero'),
+        url(r'^profile/', views.profile, name='profile'),
+        url(r'^joblist/', views.joblist, name='joblist'),
+        url(r'^seqprop/', views.seqprop, name='seqprop'),
+        url(r'^seqpropdist/', views.seqpropdist, name='seqpropdist'),)
+        

@@ -136,9 +136,13 @@ class wl_JobForm(forms.Form):
             return newJob
         newJob.save()
         with open(inputFilePath, 'w') as f:
-            f.write('JobID %d\n' % newJob.pk)
-            f.write('UserID %d\n' % newJob.user.pk)
-            f.write('JobType %s\n' % newJob.pk)
+            f.write('User %s\n' % newJob.user.username)            
+            f.write('First %s\n' % newJob.user.first_name)
+            f.write('Last %s\n' % newJob.user.last_name)
+            f.write('Email %s\n' % newJob.user.email)
+            f.write('JobName %s\n' % os.path.splitext(os.path.basename(inputFilePath))[0])
+            f.write('JobType %s\n' % newJob.jobType)
+            f.write('JobExe %s\n' % settings.WL_PATH)            
             f.write('JobParameters %s\n' % newJob.jobParameters)
             f.write('OutDir %s\n' % newJob.outdir)
             f.close()
@@ -174,17 +178,22 @@ class hetero_JobForm(forms.Form):
             return newJob
         newJob.save()
         with open(inputFilePath, 'w') as f:
-            f.write('JobID %d\n' % newJob.pk)
-            f.write('UserID %d\n' % newJob.user.pk)
-            f.write('JobType %s\n' % newJob.pk)
+            f.write('User %s\n' % newJob.user.username)            
+            f.write('First %s\n' % newJob.user.first_name)
+            f.write('Last %s\n' % newJob.user.last_name)
+            f.write('Email %s\n' % newJob.user.email)
+            f.write('JobName %s\n' % os.path.splitext(os.path.basename(inputFilePath))[0])
+            f.write('JobType %s\n' % newJob.jobType)
+            f.write('JobExe %s\n' % settings.CAMPARI_PATH)            
             f.write('JobParameters %s\n' % newJob.jobParameters)
             f.write('OutDir %s\n' % newJob.outdir)
             f.close()
 
+
         return newJob
 
 class tagForm(forms.Form):
-    tag = forms.MultipleChoiceField(choices = None)
+    tag = forms.MultipleChoiceField(choices = '')
     def __init__(self,user, *args, **kwargs):
         super(tagForm,self).__init__(*args, **kwargs)
         self.user = user
