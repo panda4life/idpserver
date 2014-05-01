@@ -8,15 +8,43 @@
 {% block title %}{% endblock %}
 
 {% block body_block %}
+{% load render_table from django_tables2 %}
 <div class="hero-unit">
-    <div class="stretch30">
-        testing
-    </div>
-    <div class="stretch30">
-        testing2
-    </div>
+        <p> Select your tag, then press analyze. Sequences will then be populated. Then
+select your sequences and press analyze. </p>
+        <form class="stretch100" id="wl_form" method="post" action="/idp/seqprop/">
+            <div class="stretch50">
+            {% csrf_token %}
+            {% for hidden in tagform.hidden_fields %}
+            {{ hidden }}
+            {% endfor %}
+
+            {% for field in tagform.visible_fields %}
+            {{ field.errors }}<br>
+            {{ field.help_text }}<br/>
+            {{ field }}
+            {% endfor %}
+            </div>
+            <div class="stretch50">
+            {% csrf_token %}
+            {% for hidden in seqform.hidden_fields %}
+            {{ hidden }}
+            {% endfor %}
+
+            {% for field in seqform.visible_fields %}
+            {{ field.errors }}<br>
+            {{ field.help_text }}<br/>
+            {{ field }}
+            {% endfor %}
+            </div>
+            <br/>
+            <button class="btn btn-primary" type="submit" name="submit">Analyze</button>
+
+        </form>
+        {% render_table sequences %}
+        <br>
+        <img class="centered-resize" src="{% static phaseplot %}" alt="Phase Plot Diagram" /> <!-- New line -->
     <div class="stretch40">
-        testing3
     </div>
 </div>
 {% endblock %}

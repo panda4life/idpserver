@@ -7,7 +7,7 @@
     <h1>Add sequences for Analysis</h1>
     <br/>
     <div class="container">
-        <form class="span6" id="sequence_form" method="post" action="/idp/add_sequence/">
+        <form class="span12" id="sequence_form" method="post" action="/idp/add_sequence/">
             {% csrf_token %}
             {% for hidden in form.hidden_fields %}
             {{ hidden }}

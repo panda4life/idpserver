@@ -164,10 +164,6 @@ def launch_wljob(request):
                 errmsg = 'Specified wang landau job for %s is already running' % (job.seq.seq)
                 return render_to_response('idp/error.html', {'errmsg': errmsg})
             return HttpResponseRedirect('/idp/joblist')
-        else:
-            if(not jobForm.is_bound):
-                print('not bound')
-            print('invalid')
     else:
         jobForm = wl_JobForm(request.user)
     return render_to_response('idp/wl.html', {'form': jobForm},context)
@@ -184,31 +180,65 @@ def launch_heterojob(request):
                 errmsg = 'Specified PDB library job for %s is already running' % (job.seq.seq)
                 return render_to_response('idp/error.html', {'errmsg': errmsg})
             return HttpResponseRedirect('/idp/joblist')
-        else:
-            if(not jobForm.is_bound):
-                print('not bound')
-            print('invalid')
     else:
         jobForm = hetero_JobForm(request.user)
     return render_to_response('idp/hetero.html', {'form': jobForm},context)
-    
+
 @login_required
 def profile(request):
     context = RequestContext(request)
     return render_to_response('idp/profile.html',{},context)
-    
+
 @login_required
 def joblist(request):
     context = RequestContext(request)
     return render_to_response('idp/joblist.html',{},context)
-    
+
+from forms import tagForm, seqForm
 @login_required
 def seqprop(request):
     context = RequestContext(request)
-    return render_to_response('idp/seqprop.html',{},context)
-    
+    if request.method == 'POST':
+        print(request.POST)
+        tagform = tagForm(request.user,request.POST)
+        seqform = seqForm(request.user,request.POST)
+        if tagform.is_valid():
+            seqform.fillField(request.POST.getlist('tag'))
+            if seqform.is_valid():
+                sequences = seqform.getSeqTable()
+                phasePlotPath = seqform.getPhasePlot()
+                print('valid seqform')
+                return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'sequences':sequences, 'phaseplot':phasePlotPath}, context)
+            else:
+                print('invalid seqform')
+                seqform.fillField(request.POST.getlist('tag'))
+                return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'sequences':seqform.getSeqTable(), 'phaseplot':seqform.getPhasePlot()}, context)
+
+    else:
+        tagform = tagForm(request.user)
+        seqform = seqForm(request.user)
+    return render_to_response('idp/seqprop.html',{'tagform':tagform, 'seqform':seqform, 'sequences':seqform.getSeqTable(), 'phaseplot':seqform.getPhasePlot()},context)
+'''
 @login_required
-def seqpropdist(request):
+def phasePlot(request):
     context = RequestContext(request)
-    return render_to_response('idp/seqpropdist.html',{},context)
-    
+    if request.method == 'POST':
+        print(request.POST)
+        tagform = tagForm(request.user,request.POST)
+        seqform = seqForm(request.user,request.POST)
+        if tagform.is_valid():
+            seqform.fillField(request.POST.getlist('tag'))
+            if seqform.is_valid():
+                phasePlotPath = seqform.getPhasePlot()
+                print('valid seqform')
+                return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'phaseplot':phasePlotPath}, context)
+            else:
+                print('invalid seqform')
+                seqform.fillField(request.POST.getlist('tag'))
+                return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'phaseplot':seqform.getPhasePlot()}, context)
+
+    else:
+        tagform = tagForm(request.user)
+        seqform = seqForm(request.user)
+    return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'phaseplot':seqform.getPhasePlot()}, context)
+'''

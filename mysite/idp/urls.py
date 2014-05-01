@@ -19,6 +19,4 @@ urlpatterns = patterns('',
         url(r'^hetero/', views.launch_heterojob, name='hetero'),
         url(r'^profile/', views.profile, name='profile'),
         url(r'^joblist/', views.joblist, name='joblist'),
-        url(r'^seqprop/', views.seqprop, name='seqprop'),
-        url(r'^seqpropdist/', views.seqpropdist, name='seqpropdist'),)
-        
+        url(r'^seqprop/', views.seqprop, name='seqprop'),)

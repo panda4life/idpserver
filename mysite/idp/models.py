@@ -21,16 +21,16 @@ class Sequence(models.Model):
     user = models.ForeignKey(User)
     submissionDate = models.DateField(default = '1900-01-01')
     seqProc = models.BooleanField(default = 0) #Boolean that determines whether the sequence had its parameters solved and stored
-    jobProc = models.BooleanField(default = 0) #Boolean that determines whether there are jobs currently running
     class Meta:
         unique_together = (('user', 'seq'))
     def __unicode__(self):
         if(self.name == ''):
-            return self.seq
+            return '%d: %s' % (self.pk, self.seq)
         return self.name
 
 class Sequence_seqdata(models.Model):
     seq = models.OneToOneField(Sequence)
+    N = models.IntegerField(default=0)
     fplus = models.FloatField(default=0)
     fminus = models.FloatField(default=0)
     FCR = models.FloatField(default=0)
@@ -48,8 +48,9 @@ class Sequence_jobs(models.Model):
     seq = models.ForeignKey(Sequence)
     user = models.ForeignKey(User)
     jobType = models.CharField(max_length = 128, default = '')
+    jobTypeVerbose = models.CharField(max_length = 128, default = '')
     jobParameters = models.CharField(max_length = 1024, )
-    status = models.CharField(max_length = 2, default = 'l')
+    status = models.CharField(max_length = 20, default = 'launched')
     progressFile = models.FilePathField(max_length = 512, default = '/output/progress.txt')
     outdir = models.FilePathField(max_length = 512, default = '/output/',allow_folders = True, allow_files = False)
     def __unicode__(self):

@@ -56,6 +56,12 @@ class resTable:
                 return 0
             return self.lookForRes(resCode,codeType).charge
 
+    def one2three(self, resCode):
+        return self.lookForRes(resCode, 1).letterCode3
+
+    def three2one(self, resCode):
+        return self.lookForRes(resCode, 3).letterCode1
+
 
 # -*- coding: utf-8 -*-
 """
@@ -355,3 +361,16 @@ class Sequence:
         s += "Phase Plot Region: %i\n" % (self.phasePlotRegion())
         s += "Phase Plot Annotation: %s\n" % (self.phasePlotAnnotation())
         return s
+
+    def makeCampariSeqFile(self,path):
+        with open(path, 'w') as f:
+            f.write('ACE')
+            for res in self.seq:
+                f.write(lkupTab.one2three(res))
+            f.write('NME')
+            f.write('END')
+            for i in range(self.countPos()):
+                f.write('CL-')
+            for i in range(self.countNeg()):
+                f.write('NA+')
+            f.close()

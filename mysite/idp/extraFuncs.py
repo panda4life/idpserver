@@ -18,3 +18,4 @@ def create_path(path):
         path = head
     for path in paths_to_create:
         os.mkdir(path)
+
