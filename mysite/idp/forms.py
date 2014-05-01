@@ -66,9 +66,12 @@ class MultiSequenceForm(forms.Form):
     def save(self):
         seqlist = self.cleaned_data['seqlist']
         for seqstring in seqlist.split('\n'):
-            if(Sequence.objects.filter(seq = seqstring, user = self.user).exists()):
+            import string
+            import re
+            inputtable = re.sub('[%s%s%s]' % (string.whitespace,string.punctuation,string.digits), '', seqstring)
+            if(Sequence.objects.filter(seq = inputtable, user = self.user).exists()):
                 continue
-            computeSeq = comp.Sequence(seqstring)
+            computeSeq = comp.Sequence(inputtable)
             from django.utils import timezone
             newSequence = Sequence(seq = computeSeq.seq,
                                    tag = self.cleaned_data['tag'],
@@ -119,11 +122,11 @@ class wl_JobForm(forms.Form):
         from django.conf import settings
         if(self.cleaned_data['genPermutants']):
             newJob.jobType = 'wlp'
-            newJob.jobTypeVerbose = 'Wang Landau \w Permutant Generation'
+            newJob.jobTypeVerbose = 'Kappa Permutant Generation'
             newJob.jobParameters = ''
         else:
             newJob.jobType = 'wl'
-            newJob.jobTypeVerbose = 'Wang Landau'
+            newJob.jobTypeVerbose = 'Kappa Density of States'
             newJob.jobParameters = ''
         newJob.status = 'launched'
         import os
@@ -131,6 +134,9 @@ class wl_JobForm(forms.Form):
         newJob.outdir = os.path.join(settings.DAEMON_OUT_PATH,os.path.normpath("%d/%d/%s/" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)))
         create_path(newJob.outdir)
         newJob.progressFile = os.path.join(newJob.outdir, 'progress.txt')
+        with open(newJob.progressFile, 'w') as f:
+            f.write('launched')
+            f.close()
         inputFilePath = os.path.normpath("%s/%d_%d_%s" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
         create_path(os.path.dirname(inputFilePath))
         if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
@@ -153,7 +159,7 @@ class wl_JobForm(forms.Form):
 
 import computation as comp
 class hetero_JobForm(forms.Form):
-    seq = forms.ModelChoiceField(Sequence.objects.none(), help_text = 'Select sequence to generate PDB Library')
+    seq = forms.ModelChoiceField(Sequence.objects.none(), help_text = 'Select sequence')
 
     def __init__(self,user, *args, **kwargs):
         super(hetero_JobForm,self).__init__(*args, **kwargs)
@@ -167,7 +173,7 @@ class hetero_JobForm(forms.Form):
         seqchoice = self.cleaned_data['seq']
         newJob = Sequence_jobs(seq = seqchoice, user = self.user)
         newJob.jobType = 'hetero'
-        newJob.jobTypeVerbose = 'PDB Library Generation'
+        newJob.jobTypeVerbose = 'FRC Trajectory Generation'
         newJob.jobParameters = '-k %s' % (settings.HETERO_KEY)
         newJob.status = 'launched'
         import os
@@ -177,6 +183,9 @@ class hetero_JobForm(forms.Form):
         seqFilePath = os.path.join(newJob.outdir, 'seq.in')
         comp.Sequence(seqchoice.seq).makeCampariSeqFile(seqFilePath)
         newJob.progressFile = os.path.join(newJob.outdir, 'progress.txt')
+        with open(newJob.progressFile, 'w') as f:
+            f.write('launched')
+            f.close()
         inputFilePath = os.path.normpath("%s/%d_%d_%s" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
         create_path(os.path.dirname(inputFilePath))
         if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):

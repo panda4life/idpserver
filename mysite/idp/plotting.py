@@ -7,8 +7,10 @@ Created on Wed Apr 30 16:43:00 2014
 
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-from models import Sequence
+import os
 def phasePlot(fp,fm,seqname,saveAs):
+    if(os.path.exists(saveAs)):
+        os.remove(saveAs)
     for x,y,label in zip(fp,fm,seqname):
         plt.scatter(x,y,marker='.',color='Black')
         plt.annotate(label,xy=(x+.01,y+.01))
@@ -32,6 +34,7 @@ def phasePlot(fp,fm,seqname,saveAs):
                                            'Positively Charged Strong Polyelectrolytes:\nSwollen Coils'],
                 prop = fontP)
     plt.savefig(saveAs,dpi=200)
+    plt.close()
     return plt
 
 def testPhasePlot():
@@ -39,6 +42,4 @@ def testPhasePlot():
 
 
 def testPhasePlotNull():
-    graph = phasePlot([],[],[],'C:\\Users\\James Ahad\\Documents\\GitHub\\idpserver\\mysite\\output\\test.png')
-
-
+    graph = phasePlot([],[],[],'/work/jahad/IDP_patterning/idpserver/mysite/output/test.png')

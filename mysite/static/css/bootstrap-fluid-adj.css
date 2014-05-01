@@ -38,6 +38,14 @@ IMG.centered-resize {
     border: 1px solid #cbcbcb;
 }
 
+.pure-table-leftal {
+    /* Remove spacing between table cells (from Normalize.css) */
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;
+    border: 1px solid #cbcbcb;
+}
+
 .pure-table caption {
     color: #000;
     font: italic 85%/1 arial, sans-serif;

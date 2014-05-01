@@ -44,6 +44,8 @@ DAEMON_OUT_PATH = os.path.join(PROJECT_PATH,'output')
 
 # Paths to auxilary analysis programs
 CAMPARI_PATH = os.path.abspath('/packages/campari/bin/x86_64/campari')
+CAMPARI_KEYS = os.path.join(DAEMON_IN_PATH, '/campariKeys/')
+HETERO_KEY = os.path.join(CAMPARI_KEYS, 'hetero.key')
 WL_PATH = os.path.abspath('/packages/FIXMELATER')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/

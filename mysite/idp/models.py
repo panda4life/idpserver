@@ -14,6 +14,7 @@ class UserProfile(models.Model):
     def __unicode__(self):
         return self.user.username
 
+import computation as comp
 class Sequence(models.Model):
     seq = models.CharField(max_length=512, db_index=False)
     name = models.CharField(max_length=128, default = '')
@@ -24,9 +25,12 @@ class Sequence(models.Model):
     class Meta:
         unique_together = (('user', 'seq'))
     def __unicode__(self):
+        from django.utils.safestring import mark_safe
         if(self.name == ''):
-            return '%d: %s' % (self.pk, self.seq)
+            return mark_safe('ID %d: %s' % (self.pk, comp.Sequence(self.seq).returnHtmlColoredString()))
         return self.name
+    def toColoredHTML(self):
+        return comp.Sequence(self.seq).returnHtmlColoredString()
 
 class Sequence_seqdata(models.Model):
     seq = models.OneToOneField(Sequence)

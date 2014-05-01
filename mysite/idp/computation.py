@@ -364,13 +364,46 @@ class Sequence:
 
     def makeCampariSeqFile(self,path):
         with open(path, 'w') as f:
-            f.write('ACE')
+            f.write('ACE\n')
             for res in self.seq:
                 f.write(lkupTab.one2three(res))
-            f.write('NME')
-            f.write('END')
+                f.write('\n')
+            f.write('NME\n')
             for i in range(self.countPos()):
-                f.write('CL-')
+                f.write('CL-\n')
             for i in range(self.countNeg()):
-                f.write('NA+')
+                f.write('NA+\n')
+            f.write('END\n')
             f.close()
+            
+    def returnColoredIndexing(self):
+        colors = []
+        for charge in self.chargePattern:
+            if(charge == 1):
+                colors.append('blue')
+            elif(charge == -1):
+                colors.append('red')
+            else:
+                colors.append('black')
+        return colors
+        
+    def returnHtmlColoredString(self):
+        coloredIndexing = self.returnColoredIndexing()
+        string = ''
+        count = 0
+        for c,s in zip(coloredIndexing,self.seq):
+            count = count + 1
+            if(np.mod(count,50) == 0):
+                string = '%s%s' %(string,'<br>')
+            string = '%s<span style="color:%s">%s</span>' % (string,c,s)
+        return string
+        
+    def returnHtmlString(self):
+        string = ''
+        count = 0
+        for s in self.seq:
+            count = count + 1
+            if(np.mod(count,50) == 0):
+                string = '%s%s' %(string,'<br>')
+            string = '%s<span style="color:black">%s</span>' % (string,s)
+        return string

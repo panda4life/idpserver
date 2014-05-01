@@ -177,22 +177,63 @@ def launch_heterojob(request):
         if jobForm.is_valid():
             job = jobForm.launchJob()
             if(job.status == 'ar'):
-                errmsg = 'Specified PDB library job for %s is already running' % (job.seq.seq)
+                errmsg = 'Specified Heterogeneity job for %s is already running' % (job.seq.seq)
                 return render_to_response('idp/error.html', {'errmsg': errmsg})
             return HttpResponseRedirect('/idp/joblist')
     else:
         jobForm = hetero_JobForm(request.user)
     return render_to_response('idp/hetero.html', {'form': jobForm},context)
 
+from models import Sequence
 @login_required
 def profile(request):
     context = RequestContext(request)
-    return render_to_response('idp/profile.html',{},context)
+    import django_tables2 as tables
+    class SeqTable(tables.Table):
+        pk = tables.Column(verbose_name = 'Sequence ID')
+        tag = tables.Column(verbose_name= 'Tag')
+        class SeqColumn(tables.Column):
+            def render(self,value):
+                from django.utils.safestring import mark_safe
+                from django.utils.html import escape
+                import computation as comp
+                return mark_safe(comp.Sequence(escape(value)).returnHtmlColoredString())
+        seq = SeqColumn()
+        class Meta:
+            attrs = {'class': 'pure-table'}
+            order_by = ('tag','pk',)
+        def __init__(self,*args,**kwargs):
+            super(SeqTable, self).__init__(*args, **kwargs)
+            
+    seqtable = SeqTable(Sequence.objects.filter(user = request.user))
+    print seqtable
+    return render_to_response('idp/profile.html',{'sequences':seqtable},context)
 
+from models import Sequence_jobs
 @login_required
 def joblist(request):
     context = RequestContext(request)
-    return render_to_response('idp/joblist.html',{},context)
+    import django_tables2 as tables
+    class JobTable(tables.Table):
+        jobTypeVerbose = tables.Column(verbose_name = 'Job Type')
+        seq = tables.Column(verbose_name = 'Sequence')
+        status = tables.Column()
+        class Meta:
+            attrs =  {'class': 'pure-table'}
+            order_by = ('status','seq',)
+            
+    joblist = Sequence_jobs.objects.select_related().filter(user = request.user)
+    for job in joblist:
+        with open(job.progressFile, "r") as f:
+            f.seek (0, 2)           # Seek @ EOF
+            fsize = f.tell()        # Get Size
+            f.seek (max (fsize-1024, 0), 0) # Set pos @ last n chars
+            lines = f.readlines()       # Read to end
+            job.status = lines[-1]
+            job.save()
+            f.close()
+    jobtable = JobTable(joblist)
+    return render_to_response('idp/joblist.html',{'joblist':jobtable},context)
 
 from forms import tagForm, seqForm
 @login_required
@@ -218,27 +259,3 @@ def seqprop(request):
         tagform = tagForm(request.user)
         seqform = seqForm(request.user)
     return render_to_response('idp/seqprop.html',{'tagform':tagform, 'seqform':seqform, 'sequences':seqform.getSeqTable(), 'phaseplot':seqform.getPhasePlot()},context)
-'''
-@login_required
-def phasePlot(request):
-    context = RequestContext(request)
-    if request.method == 'POST':
-        print(request.POST)
-        tagform = tagForm(request.user,request.POST)
-        seqform = seqForm(request.user,request.POST)
-        if tagform.is_valid():
-            seqform.fillField(request.POST.getlist('tag'))
-            if seqform.is_valid():
-                phasePlotPath = seqform.getPhasePlot()
-                print('valid seqform')
-                return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'phaseplot':phasePlotPath}, context)
-            else:
-                print('invalid seqform')
-                seqform.fillField(request.POST.getlist('tag'))
-                return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'phaseplot':seqform.getPhasePlot()}, context)
-
-    else:
-        tagform = tagForm(request.user)
-        seqform = seqForm(request.user)
-    return render_to_response('idp/seqprop.html', {'tagform':tagform, 'seqform':seqform, 'phaseplot':seqform.getPhasePlot()}, context)
-'''

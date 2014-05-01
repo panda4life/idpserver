@@ -1,6 +1,21 @@
 {% extends 'idp/base.html' %}
 
-{% block title %}{% endblock %}
+{% block extracss %}
+{% load static %}
+<link href="{% static 'css/stretchContainers.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}View Sequence Patterning{% endblock %}
 
 {% block body_block %}
+{% load render_table from django_tables2 %}
+<div class="hero-unit">
+        <h2> All registered sequences </h2>
+        <p>Red is for <span style="color:red">acidic residues</span>, and Blue is for <span style="color:blue">basic residues</span></p>
+        <br>
+        {% render_table sequences %}
+
+    <div class="stretch40">
+    </div>
+</div>
 {% endblock %}

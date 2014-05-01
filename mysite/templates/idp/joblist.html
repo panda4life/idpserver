@@ -1,6 +1,19 @@
 {% extends 'idp/base.html' %}
 
-{% block title %}{% endblock %}
+{% block extracss %}
+{% load static %}
+<link href="{% static 'css/stretchContainers.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title %}Submitted Jobs{% endblock %}
 
 {% block body_block %}
+{% load render_table from django_tables2 %}
+<div class="hero-unit">
+        <h2> All Submitted Jobs</h2>
+        {% render_table joblist %}
+
+    <div class="stretch40">
+    </div>
+</div>
 {% endblock %}
