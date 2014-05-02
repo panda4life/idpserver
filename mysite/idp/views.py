@@ -224,14 +224,19 @@ def joblist(request):
             
     joblist = Sequence_jobs.objects.select_related().filter(user = request.user)
     for job in joblist:
-        with open(job.progressFile, "r") as f:
-            f.seek (0, 2)           # Seek @ EOF
-            fsize = f.tell()        # Get Size
-            f.seek (max (fsize-1024, 0), 0) # Set pos @ last n chars
-            lines = f.readlines()       # Read to end
-            job.status = lines[-1]
-            job.save()
-            f.close()
+        try:
+            f = open(job.progressFile, "r") 
+        except IOError:
+            job.status = 'submitted'
+        else:
+            with f:
+                f.seek (0, 2)           # Seek @ EOF
+                fsize = f.tell()        # Get Size
+                f.seek (max (fsize-1024, 0), 0) # Set pos @ last n chars
+                lines = f.readlines()       # Read to end
+                job.status = lines[-1]
+                job.save()
+                f.close()
     jobtable = JobTable(joblist)
     return render_to_response('idp/joblist.html',{'joblist':jobtable},context)
 

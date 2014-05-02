@@ -128,33 +128,37 @@ class wl_JobForm(forms.Form):
             newJob.jobType = 'wl'
             newJob.jobTypeVerbose = 'Kappa Density of States'
             newJob.jobParameters = ''
-        newJob.status = 'launched'
+        newJob.status = 'submitted'
         import os
         from extraFuncs import create_path
-        newJob.outdir = os.path.join(settings.DAEMON_OUT_PATH,os.path.normpath("%d/%d/%s/" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)))
-        create_path(newJob.outdir)
+        newJob.outdir = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_OUT_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
         newJob.progressFile = os.path.join(newJob.outdir, 'progress.txt')
-        with open(newJob.progressFile, 'w') as f:
-            f.write('launched')
-            f.close()
-        inputFilePath = os.path.normpath("%s/%d_%d_%s" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
-        create_path(os.path.dirname(inputFilePath))
         if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
             newJob.status = 'ar'
             return newJob
-        newJob.save()
-        with open(inputFilePath, 'w') as f:
+        
+        #Make input files
+        inputFileName = "%d_%d_%s" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)
+        inputFilePath = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
+        create_path(inputFilePath)
+        #Input File
+        with open(os.path.join(inputFilePath, inputFileName), 'w') as f:
             f.write('User %s\n' % newJob.user.username)
             f.write('First %s\n' % newJob.user.first_name)
             f.write('Last %s\n' % newJob.user.last_name)
             f.write('Email %s\n' % newJob.user.email)
             f.write('JobName %s\n' % os.path.splitext(os.path.basename(inputFilePath))[0])
             f.write('JobType %s\n' % newJob.jobType)
-            f.write('JobExe %s\n' % settings.WL_PATH)
+            f.write('JobExe %s\n' % settings.CAMPARI_PATH)
             f.write('JobParameters %s\n' % newJob.jobParameters)
             f.write('OutDir %s\n' % newJob.outdir)
             f.close()
-
+        #Progress File
+        with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
+            f.write('submitted')
+            f.close()
+            
+        newJob.save()
         return newJob
 
 import computation as comp
@@ -175,24 +179,21 @@ class hetero_JobForm(forms.Form):
         newJob.jobType = 'hetero'
         newJob.jobTypeVerbose = 'FRC Trajectory Generation'
         newJob.jobParameters = '-k %s' % (settings.HETERO_KEY)
-        newJob.status = 'launched'
+        newJob.status = 'submitted'
         import os
         from extraFuncs import create_path
-        newJob.outdir = os.path.join(settings.DAEMON_OUT_PATH,os.path.normpath("%d/%d/%s/" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)))
-        create_path(newJob.outdir)
-        seqFilePath = os.path.join(newJob.outdir, 'seq.in')
-        comp.Sequence(seqchoice.seq).makeCampariSeqFile(seqFilePath)
+        newJob.outdir = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_OUT_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
         newJob.progressFile = os.path.join(newJob.outdir, 'progress.txt')
-        with open(newJob.progressFile, 'w') as f:
-            f.write('launched')
-            f.close()
-        inputFilePath = os.path.normpath("%s/%d_%d_%s" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
-        create_path(os.path.dirname(inputFilePath))
         if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
             newJob.status = 'ar'
             return newJob
-        newJob.save()
-        with open(inputFilePath, 'w') as f:
+        
+        #Make input files
+        inputFileName = "%d_%d_%s" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)
+        inputFilePath = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
+        create_path(inputFilePath)
+        #Input File
+        with open(os.path.join(inputFilePath, inputFileName), 'w') as f:
             f.write('User %s\n' % newJob.user.username)
             f.write('First %s\n' % newJob.user.first_name)
             f.write('Last %s\n' % newJob.user.last_name)
@@ -203,8 +204,15 @@ class hetero_JobForm(forms.Form):
             f.write('JobParameters %s\n' % newJob.jobParameters)
             f.write('OutDir %s\n' % newJob.outdir)
             f.close()
-
-
+        #Progress File
+        with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
+            f.write('submitted')
+            f.close()
+        #Sequence File
+        seqFilePath = os.path.join(inputFilePath, 'seq.in')
+        comp.Sequence(seqchoice.seq).makeCampariSeqFile(seqFilePath)
+        
+        newJob.save()
         return newJob
 
 class tagForm(forms.Form):

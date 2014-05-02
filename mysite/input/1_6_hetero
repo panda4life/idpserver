@@ -1,9 +1,0 @@
-User admin
-First 
-Last 
-Email jamesahad@gmail.com
-JobName 1_6_hetero
-JobType hetero
-JobExe /packages/campari/bin/x86_64/campari
-JobParameters -k /campariKeys/hetero.key
-OutDir /work/jahad/IDP_patterning/idpserver/mysite/output/1/6/hetero
