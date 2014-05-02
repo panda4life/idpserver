@@ -138,3 +138,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+try:
+    PROD_SETTINGS
+except NameError:
+    try:
+        from production_settings import *
+    except ImportError:
+        pass

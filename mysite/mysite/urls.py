@@ -2,8 +2,7 @@ from django.conf.urls import patterns, include, url
 
 from django.contrib import admin
 admin.autodiscover()
-
-from rango import views
+import settings
 
 urlpatterns = patterns('',
     # Examples:
@@ -17,4 +16,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^idp/', include('idp.urls')), # ADD THIS NEW TUPLE!
+
 )
