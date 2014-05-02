@@ -2,8 +2,8 @@ PROD_SETTINGS = True
 from settings import *
 import os
 
-DAEMON_IN_PATH = os.path.abspath('/home/input')
-DAEMON_OUT_PATH = os.path.abspath('/home/output')
+DAEMON_IN_PATH = os.path.abspath('/home/idpserver/input')
+DAEMON_OUT_PATH = os.path.abspath('/home/idpserver/output')
 
 CAMPARI_PATH = os.path.abspath('/packages/campari/bin/x86_64/campari')
 CAMPARI_KEYS = os.path.join(DAEMON_IN_PATH, '/campariKeys/')
