@@ -38,10 +38,6 @@ LOGIN_URL = '/idp/login/'
 DAEMON_IN_PATH = os.path.join(PROJECT_PATH,'input')
 DAEMON_OUT_PATH = os.path.join(PROJECT_PATH,'output')
 
-#this is for deployment
-#DAEMON_IN_PATH = '/input/'
-#DAEMON_OUT_PATH = '/output/'
-
 # Paths to auxilary analysis programs
 CAMPARI_PATH = os.path.abspath('/packages/campari/bin/x86_64/campari')
 CAMPARI_KEYS = os.path.join(DAEMON_IN_PATH, '/campariKeys/')
@@ -137,7 +133,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
-
+#Uncomment for Production Server
+'''
 try:
     PROD_SETTINGS
 except NameError:
@@ -145,3 +142,4 @@ except NameError:
         from production_settings import *
     except ImportError:
         pass
+'''

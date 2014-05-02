@@ -7,6 +7,10 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'mysite.settings'
 
 import django.core.handlers.wsgi
 
+#HTTPS Stuff
+#os.environ['HTTPS'] = "on"
+#os.environ['wsgi.url_scheme'] = 'https'
+
 _application = django.core.handlers.wsgi.WSGIHandler()
 def application(environ, start_response):
     environ['PATH_INFO'] = environ['SCRIPT_NAME'] + environ['PATH_INFO']
