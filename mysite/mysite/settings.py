@@ -134,7 +134,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 #Uncomment for Production Server
-'''
+
 try:
     PROD_SETTINGS
 except NameError:
@@ -142,4 +142,4 @@ except NameError:
         from production_settings import *
     except ImportError:
         pass
-'''
+
