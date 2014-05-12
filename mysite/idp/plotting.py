@@ -43,3 +43,62 @@ def testPhasePlot():
 
 def testPhasePlotNull():
     graph = phasePlot([],[],[],'/work/jahad/IDP_patterning/idpserver/mysite/output/test.png')
+
+
+import computation as comp
+def NCPRPlot(sequence, bloblen, saveAs):
+    if(not sequence is None):
+        data = sequence.NCPRdist(bloblen)
+        plt.plot(data[0,:], data[1,:])
+    else:
+        plt.plot([],[])
+        plt.xlim([0,50])
+    plt.title('NCPR Distribution')
+    plt.xlabel('Blob Index')
+    plt.ylabel('NCPR')
+    plt.ylim([-1.1,1.1])
+    plt.savefig(saveAs, dpi=200)
+    plt.close()
+    return plt
+
+def testNCPRPlot():
+    graph = NCPRPlot(comp.Sequence('EEEEEEKKKKEKEKEKEKEKEEEEEEEKKKKKKEKEKEKEKEKEKEKGGGGGGKEKEKE'),5, 'C:\\Users\\James Ahad\\Documents\\GitHub\\idpserver\\mysite\\output\\testNCPR.png')
+
+def SigmaPlot(sequence, bloblen, saveAs):
+    if(not sequence is None):
+        data = sequence.Sigmadist(bloblen)
+        plt.plot(data[0,:], data[1,:])
+    else:
+        plt.plot([],[])
+        plt.xlim([0,50])
+    plt.title('Sigma Distribution')
+    plt.xlabel('Blob Index')
+    plt.ylabel('Sigma')
+    plt.ylim([-.1,1.1])
+    plt.savefig(saveAs, dpi=200)
+    plt.close()
+    return plt
+
+def testSigmaPlot():
+    graph = SigmaPlot(comp.Sequence('EEEEEEKKKKEKEKEKEKEKEEEEEEEKKKKKKEKEKEKEKEKEKEKGGGGGGKEKEKE'),5, 'C:\\Users\\James Ahad\\Documents\\GitHub\\idpserver\\mysite\\output\\testSigma.png')
+
+def HydroPlot(sequence, bloblen, saveAs):
+    if(not sequence is None):
+        data = sequence.Hydrodist(bloblen)
+        plt.plot(data[0,:], data[1,:])
+    else:
+        plt.plot([],[])
+        plt.xlim([0,50])
+    plt.title('Hydropathy Distribution')
+    plt.xlabel('Blob Index')
+    plt.ylabel('Hydropathy')
+    plt.savefig(saveAs, dpi=200)
+    plt.close()
+    return plt
+
+def testHydroPlot():
+    graph = HydroPlot(comp.Sequence('EEEEEEKKKKEKEKEKEKEKEEEEEEEKKKKKKEKEKEKEKEKEKEKGGGGGGKEKEKE'),5, 'C:\\Users\\James Ahad\\Documents\\GitHub\\idpserver\\mysite\\output\\testHydro.png')
+
+testNCPRPlot()
+testSigmaPlot()
+testHydroPlot()

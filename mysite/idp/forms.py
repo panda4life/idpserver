@@ -136,7 +136,7 @@ class wl_JobForm(forms.Form):
         if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
             newJob.status = 'ar'
             return newJob
-        
+
         #Make input files
         inputFileName = "%d_%d_%s" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)
         inputFilePath = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
@@ -157,7 +157,7 @@ class wl_JobForm(forms.Form):
         with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
             f.write('submitted')
             f.close()
-            
+
         newJob.save()
         return newJob
 
@@ -187,7 +187,7 @@ class hetero_JobForm(forms.Form):
         if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
             newJob.status = 'ar'
             return newJob
-        
+
         #Make input files
         inputFileName = "%d_%d_%s" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)
         inputFilePath = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
@@ -211,7 +211,7 @@ class hetero_JobForm(forms.Form):
         #Sequence File
         seqFilePath = os.path.join(inputFilePath, 'seq.in')
         comp.Sequence(seqchoice.seq).makeCampariSeqFile(seqFilePath)
-        
+
         newJob.save()
         return newJob
 
@@ -255,6 +255,7 @@ class seqForm(forms.Form):
             FCR = tables.Column()
             NCPR = tables.Column()
             meanH = tables.Column(verbose_name = '<H>')
+            dmax = tables.Column()
             kappa = tables.Column()
             class Meta:
                 attrs = {'class': 'pure-table'}
@@ -283,3 +284,107 @@ class seqForm(forms.Form):
         phasePlot(fplus,fminus,labels,saveDir)
         return os.path.basename(saveDir)
 
+class singleSeqForm(forms.Form):
+    seqs = forms.ModelChoiceField(Sequence.objects.none())
+    plotType = forms.ChoiceField(widget=forms.RadioSelect, choices=(('1','NCPR'),('2','Sigma'),('3','Hydropathy')), help_text='Select Plot Distribution')
+    def __init__(self,user, *args, **kwargs):
+        super(singleSeqForm,self).__init__(*args, **kwargs)
+        self.user = user
+        self.help_text = ''
+
+    def fillField(self,tags):
+        seqSet = Sequence.objects.none()
+        for t in tags:
+            seqSet = seqSet | Sequence.objects.filter(tag = t)
+        self.fields['seqs'].queryset = seqSet
+
+    def getSeqTable(self):
+        try:
+            seqlist = self.cleaned_data['seqs']
+        except:
+            seqlist = Sequence.objects.none()
+        seqdata = Sequence_seqdata.objects.select_related().filter(seq = seqlist)
+        import django_tables2 as tables
+        class SeqDataTable(tables.Table):
+            pk = tables.Column(verbose_name = 'sequence id')
+            FCR = tables.Column()
+            NCPR = tables.Column()
+            sigma = tables.Column(verbose_name = 'Sigma')
+            meanH = tables.Column(verbose_name = '<H>')
+            dmax = tables.Column()
+            kappa = tables.Column()
+            class Meta:
+                attrs = {'class': 'pure-table'}
+        return SeqDataTable(seqdata)
+
+    def getPlot(self):
+        try:
+            seqlist = self.cleaned_data['seqs']
+            plotType = self.cleaned_data['plotType']
+        except:
+            seqlist = Sequence.objects.none()
+            plotType = ('1', 'NCPR')
+        seqdata = Sequence_seqdata.objects.select_related().filter(seq = seqlist)
+        ps = None
+        for s in seqdata:
+            ps = s
+        if(not ps is None):
+            plotseq = comp.Sequence(ps.seq.seq)
+        else:
+            plotseq = None
+        bloblen = 5
+        from django.conf import settings
+        import os
+        from plotting import NCPRPlot, SigmaPlot, HydroPlot
+        print 'im here'
+        print(plotType)
+        print(type(plotseq))
+        if(plotType[0] == '1'):
+            saveDir = os.path.join(settings.STATIC_PATH, os.path.normpath('temp_%s_%s.png' %(self.user.username,'NCPR')))
+            NCPRPlot(plotseq,bloblen,saveDir)
+        elif(plotType[0] == '2'):
+            saveDir = os.path.join(settings.STATIC_PATH, os.path.normpath('temp_%s_%s.png' %(self.user.username,'sigma')))
+            SigmaPlot(plotseq,bloblen,saveDir)
+        elif(plotType[0] == '3'):
+            saveDir = os.path.join(settings.STATIC_PATH, os.path.normpath('temp_%s_%s.png' %(self.user.username,'hydro')))
+            HydroPlot(plotseq,bloblen,saveDir)
+        print saveDir
+        return os.path.basename(saveDir)
+
+class MassMultiSequenceForm(forms.Form):
+    seqfile = forms.FileField(help_text = "Please enter sequence file with amino acid sequences separated by carraige returns")
+    tag = forms.CharField(max_length=None, help_text = "Please enter your sequence category")
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(MultiSequenceForm, self).__init__(*args, **kwargs)
+    def save(self):
+        seqfile = self.cleaned_data['seqlist']
+        for seqstring in seqlist.split('\n'):
+            import string
+            import re
+            inputtable = re.sub('[%s%s%s]' % (string.whitespace,string.punctuation,string.digits), '', seqstring)
+            if(Sequence.objects.filter(seq = inputtable, user = self.user).exists()):
+                continue
+            computeSeq = comp.Sequence(inputtable)
+            from django.utils import timezone
+            newSequence = Sequence(seq = computeSeq.seq,
+                                   tag = self.cleaned_data['tag'],
+                                   user = self.user,
+                                   submissionDate = timezone.now(),
+                                   seqProc = False,)
+            newSequence.save()
+            newSeqData = Sequence_seqdata(seq = newSequence,
+                                            N = computeSeq.len,
+                                            fplus = computeSeq.Fplus(),
+                                            fminus = computeSeq.Fminus(),
+                                            FCR = computeSeq.FCR(),
+                                            NCPR = computeSeq.NCPR(),
+                                            meanH = computeSeq.meanHydropathy(),
+                                            sigma = computeSeq.sigma(),
+                                            delta = computeSeq.delta(),
+                                            dmax = computeSeq.deltaMax(),
+                                            kappa = computeSeq.kappa())
+            newSeqData.save()
+            newSequence.seqProc = True
+            newSequence.save()

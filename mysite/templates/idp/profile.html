@@ -11,7 +11,9 @@
 {% load render_table from django_tables2 %}
 <div class="hero-unit">
         <h2> All registered sequences </h2>
-        <p>Red is for <span style="color:red">acidic residues</span>, and Blue is for <span style="color:blue">basic residues</span></p>
+        <p>Red is for <span style="color:red">acidic residues</span>,
+Blue is for <span style="color:blue">basic residues</span> and
+Green is for <span style="color:green">polar residues</span></p>
         <br>
         {% render_table sequences %}
 

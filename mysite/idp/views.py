@@ -147,7 +147,7 @@ def addsequence(request):
             return HttpResponseRedirect('/idp/profile') # Redirect after POST
     else:
         seqform = MultiSequenceForm(request.user) # An unbound form
-    print(seqform.visible_fields)
+    #print(seqform.visible_fields)
     return render_to_response('idp/add_sequence.html', {'form': seqform},context)
 
 
@@ -204,7 +204,7 @@ def profile(request):
             order_by = ('tag','pk',)
         def __init__(self,*args,**kwargs):
             super(SeqTable, self).__init__(*args, **kwargs)
-            
+
     seqtable = SeqTable(Sequence.objects.filter(user = request.user))
     print seqtable
     return render_to_response('idp/profile.html',{'sequences':seqtable},context)
@@ -221,11 +221,11 @@ def joblist(request):
         class Meta:
             attrs =  {'class': 'pure-table'}
             order_by = ('status','seq',)
-            
+
     joblist = Sequence_jobs.objects.select_related().filter(user = request.user)
     for job in joblist:
         try:
-            f = open(job.progressFile, "r") 
+            f = open(job.progressFile, "r")
         except IOError:
             job.status = 'submitted'
         else:
@@ -264,3 +264,43 @@ def seqprop(request):
         tagform = tagForm(request.user)
         seqform = seqForm(request.user)
     return render_to_response('idp/seqprop.html',{'tagform':tagform, 'seqform':seqform, 'sequences':seqform.getSeqTable(), 'phaseplot':seqform.getPhasePlot()},context)
+
+from forms import singleSeqForm
+@login_required
+def singleseqprop(request):
+    context = RequestContext(request)
+    if request.method == 'POST':
+        print(request.POST)
+        tagform = tagForm(request.user,request.POST)
+        seqform = singleSeqForm(request.user,request.POST)
+        if tagform.is_valid():
+            seqform.fillField(request.POST.getlist('tag'))
+            if seqform.is_valid():
+                sequences = seqform.getSeqTable()
+                plotPath = seqform.getPlot()
+                print('valid seqform')
+                return render_to_response('idp/singleseqprop.html', {'tagform':tagform, 'seqform':seqform, 'sequences':sequences, 'plot':plotPath}, context)
+            else:
+                print('invalid seqform')
+                seqform.fillField(request.POST.getlist('tag'))
+                return render_to_response('idp/singleseqprop.html', {'tagform':tagform, 'seqform':seqform, 'sequences':seqform.getSeqTable(), 'plot':seqform.getPlot()}, context)
+
+    else:
+        tagform = tagForm(request.user)
+        seqform = singleSeqForm(request.user)
+    return render_to_response('idp/singleseqprop.html',{'tagform':tagform, 'seqform':seqform, 'sequences':seqform.getSeqTable(), 'plot':seqform.getPlot()},context)
+
+from forms import MassMultiSequenceForm
+def massaddsequence(request):
+    # Like before, obtain the context for the user's request.
+    context = RequestContext(request)
+
+    if request.method == 'POST': # If the form has been submitted...
+        seqform = MassMultiSequenceForm(request.user,request.POST,request.FILES) # A form bound to the POST data
+        if seqform.is_valid(): # All validation rules pass
+            user = seqform.save()
+            return HttpResponseRedirect('/idp/jobs') # Redirect after POST
+    else:
+        seqform = MassMultiSequenceForm(request.user) # An unbound form
+    #print(seqform.visible_fields)
+    return render_to_response('idp/add_sequence.html', {'form': seqform},context)

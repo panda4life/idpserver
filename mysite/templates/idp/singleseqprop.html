@@ -11,8 +11,8 @@
 {% load render_table from django_tables2 %}
 <div class="hero-unit">
         <p> Select your tag, then press analyze. Sequences will then be populated. Then
-select your sequences and press analyze. </p>
-        <form class="stretch100" id="seqphase" method="post" action="/idp/seqprop/">
+select your sequence and the distribution of interest and press analyze. </p>
+        <form class="stretch100" id="seqdistr" method="post" action="/idp/singleseqprop/">
             <div class="stretch50">
             {% csrf_token %}
             {% for hidden in tagform.hidden_fields %}
@@ -43,7 +43,7 @@ select your sequences and press analyze. </p>
         </form>
         {% render_table sequences %}
         <br>
-        <img class="centered-resize" src="{% static phaseplot %}" alt="Phase Plot Diagram" /> <!-- New line -->
+        <img class="centered-resize" src="{% static plot %}" alt="Sequence Distribution Plot" /> <!-- New line -->
     <div class="stretch40">
     </div>
 </div>

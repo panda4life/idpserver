@@ -62,6 +62,19 @@ class resTable:
     def three2one(self, resCode):
         return self.lookForRes(resCode, 3).letterCode1
 
+    def isPolar(self, resCode,codeType = 1):
+        if(codeType == 3):
+            res = three2one(resCode)
+        elif(codeType == 1):
+            res = resCode
+        else:
+            return False;
+        if(res == 'Q' or res == 'N' or res == 'H' or res == 'S' or res == 'T'
+            or res == 'Y' or res == 'C' or res == 'M' or res == 'W'):
+            return True;
+        else:
+            return False;
+
 
 # -*- coding: utf-8 -*-
 """
@@ -375,18 +388,20 @@ class Sequence:
                 f.write('NA+\n')
             f.write('END\n')
             f.close()
-            
+
     def returnColoredIndexing(self):
         colors = []
-        for charge in self.chargePattern:
+        for rescode, charge in zip(self.seq,self.chargePattern):
             if(charge == 1):
                 colors.append('blue')
             elif(charge == -1):
                 colors.append('red')
+            elif(lkupTab.isPolar(rescode)):
+                colors.append('green')
             else:
                 colors.append('black')
         return colors
-        
+
     def returnHtmlColoredString(self):
         coloredIndexing = self.returnColoredIndexing()
         string = ''
@@ -397,7 +412,7 @@ class Sequence:
                 string = '%s%s' %(string,'<br>')
             string = '%s<span style="color:%s">%s</span>' % (string,c,s)
         return string
-        
+
     def returnHtmlString(self):
         string = ''
         count = 0
@@ -407,3 +422,38 @@ class Sequence:
                 string = '%s%s' %(string,'<br>')
             string = '%s<span style="color:black">%s</span>' % (string,s)
         return string
+
+    def NCPRdist(self, bloblen):
+        nblobs = self.len-bloblen+1
+        blobncpr = [0]*nblobs
+        for i in np.arange(0,nblobs):
+            blob = self.chargePattern[i:(i+bloblen)]
+            bpos = len(np.where(blob>0)[0])
+            bneg = len(np.where(blob<0)[0])
+            blobncpr[i] = (bpos-bneg)/(bloblen+0.0)
+        return np.vstack((np.arange(1,nblobs+1), blobncpr))
+
+    def Sigmadist(self, bloblen):
+        nblobs = self.len-bloblen+1
+        blobsig = [0]*nblobs
+        for i in np.arange(0,nblobs):
+            blob = self.chargePattern[i:(i+bloblen)]
+            bpos = len(np.where(blob>0)[0])
+            bneg = len(np.where(blob<0)[0])
+            bncpr = (bpos-bneg)/(bloblen+0.0)
+            bfcr = (bpos+bneg)/(bloblen+0.0)
+            if(bfcr == 0):
+                bsig = 0
+            else:
+                bsig = bncpr**2/bfcr
+            blobsig[i] = bsig
+        return np.vstack((np.arange(1,nblobs+1), blobsig))
+
+    def Hydrodist(self, bloblen):
+        nblobs = self.len-bloblen+1
+        blobhydro = [0]*nblobs
+        hydrochain = [lkupTab.lookUpHydropathy(res) for res in self.seq]
+        for i in np.arange(0,nblobs):
+            blob = hydrochain[i:(i+bloblen)]
+            blobhydro[i] = sum(blob)
+        return np.vstack((np.arange(1,nblobs+1), blobhydro))
