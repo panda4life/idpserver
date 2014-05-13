@@ -1,0 +1,9 @@
+User testuser
+First 
+Last 
+Email test@email.com
+JobName mass_seq
+JobType mass_seq
+JobExe C:\packages\campari\bin\x86_64\campari
+JobParameters 
+OutDir C:\Users\James Ahad\Documents\GitHub\idpserver\mysite\output\4\nonseq\mass_seq

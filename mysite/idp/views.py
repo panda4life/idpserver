@@ -298,9 +298,9 @@ def massaddsequence(request):
     if request.method == 'POST': # If the form has been submitted...
         seqform = MassMultiSequenceForm(request.user,request.POST,request.FILES) # A form bound to the POST data
         if seqform.is_valid(): # All validation rules pass
-            user = seqform.save()
-            return HttpResponseRedirect('/idp/jobs') # Redirect after POST
+            user = seqform.process(request.FILES['seqfile'])
+            return HttpResponseRedirect('/idp/joblist') # Redirect after POST
     else:
         seqform = MassMultiSequenceForm(request.user) # An unbound form
     #print(seqform.visible_fields)
-    return render_to_response('idp/add_sequence.html', {'form': seqform},context)
+    return render_to_response('idp/mass_add_sequence.html', {'form': seqform},context)

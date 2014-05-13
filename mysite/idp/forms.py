@@ -351,13 +351,65 @@ class singleSeqForm(forms.Form):
         print saveDir
         return os.path.basename(saveDir)
 
+import time
 class MassMultiSequenceForm(forms.Form):
     seqfile = forms.FileField(help_text = "Please enter sequence file with amino acid sequences separated by carraige returns")
     tag = forms.CharField(max_length=None, help_text = "Please enter your sequence category")
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
-        super(MultiSequenceForm, self).__init__(*args, **kwargs)
+        super(MassMultiSequenceForm, self).__init__(*args, **kwargs)
+
+    def process(self, f):
+        from django.conf import settings
+        dummies = Sequence.objects.filter(user = self.user).filter(name = 'dummy')
+        if(len(dummies) == 0):
+            dummySeq = Sequence(seq = '', name = 'dummy', tag = '', user = self.user, submissionDate = time.strftime("%d/%m/%Y"), seqProc = False)
+        else:
+            dummySeq = dummies[0]
+        newJob = Sequence_jobs(seq = dummySeq, user = self.user)
+        newJob.jobType = 'mass_seq'
+        newJob.jobTypeVerbose = 'Mass Sequence Submission'
+        newJob.status = 'submitted'
+        import os
+        from extraFuncs import create_path
+        newJob.outdir = os.path.normpath("%s/%d/%s/%s/" % (settings.DAEMON_OUT_PATH, newJob.user.pk, 'nonseq', newJob.jobType))
+        newJob.progressFile = os.path.join(newJob.outdir, 'progress.txt')
+        if(Sequence_jobs.objects.filter(seq = newJob.seq, jobType = newJob.jobType).exists()):
+            newJob.status = 'ar'
+            return newJob
+
+        #Make input files
+        inputFileName = "%d_%s_%s" % (newJob.user.pk, 'nonseq', newJob.jobType)
+        inputFilePath = os.path.normpath("%s/%d/%s/%s/" % (settings.DAEMON_IN_PATH, newJob.user.pk, 'nonseq', newJob.jobType))
+        create_path(inputFilePath)
+        #Input File
+        with open(os.path.join(inputFilePath, inputFileName), 'w') as f:
+            f.write('User %s\n' % newJob.user.username)
+            f.write('First %s\n' % newJob.user.first_name)
+            f.write('Last %s\n' % newJob.user.last_name)
+            f.write('Email %s\n' % newJob.user.email)
+            f.write('JobName %s\n' % os.path.splitext(os.path.basename(inputFilePath))[0])
+            f.write('JobType %s\n' % newJob.jobType)
+            f.write('JobExe %s\n' % settings.CAMPARI_PATH)
+            f.write('JobParameters %s\n' % newJob.jobParameters)
+            f.write('OutDir %s\n' % newJob.outdir)
+            f.close()
+        #Progress File
+        with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
+            f.write('submitted')
+            f.close()
+        #Sequence File
+        seqFilePath = os.path.join(inputFilePath, 'seqfile.txt')
+        def handle_uploaded_file(outpath,f):
+            with open(outpath, 'wb+') as destination:
+                for chunk in f.chunks():
+                    destination.write(chunk)
+        handle_uploaded_file(seqFilePath,f)
+        newJob.jobParameters = '-s %s' % (seqFilePath)
+
+        newJob.save()
+        return newJob
     def save(self):
         seqfile = self.cleaned_data['seqlist']
         for seqstring in seqlist.split('\n'):
