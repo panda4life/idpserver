@@ -290,6 +290,7 @@ def singleseqprop(request):
         seqform = singleSeqForm(request.user)
     return render_to_response('idp/singleseqprop.html',{'tagform':tagform, 'seqform':seqform, 'sequences':seqform.getSeqTable(), 'plot':seqform.getPlot()},context)
 
+# This function is no longer used
 from forms import MassMultiSequenceForm
 def massaddsequence(request):
     # Like before, obtain the context for the user's request.

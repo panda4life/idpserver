@@ -105,6 +105,11 @@ class tagForm(forms.Form):
     def save(self):
 '''
 class wl_JobForm(forms.Form):
+    '''
+    FIXME: 
+        - Needs to handle Freeze File input
+        - Needs to handle sequence design (aka be able to specify a range of kappa for permutant generation)
+    '''
     seq = forms.ModelChoiceField(Sequence.objects.none(), help_text = 'Select sequence to solve for Kappa DoS')
     #seq = forms.ModelMultipleChoiceField(Sequence.objects.all())
     genPermutants = forms.NullBooleanField(help_text='Would you like to generate Kappa sequence permutants?')
@@ -123,11 +128,11 @@ class wl_JobForm(forms.Form):
         if(self.cleaned_data['genPermutants']):
             newJob.jobType = 'wlp'
             newJob.jobTypeVerbose = 'Kappa Permutant Generation'
-            newJob.jobParameters = ''
+            newJob.jobParameters = '' #these are initialized as empty until input files are generated
         else:
             newJob.jobType = 'wl'
             newJob.jobTypeVerbose = 'Kappa Density of States'
-            newJob.jobParameters = ''
+            newJob.jobParameters = '' #these are initialized as empty until input files are generated
         newJob.status = 'submitted'
         import os
         from extraFuncs import create_path
@@ -141,6 +146,19 @@ class wl_JobForm(forms.Form):
         inputFileName = "%d_%d_%s" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)
         inputFilePath = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
         create_path(inputFilePath)
+        #Progress File
+        with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
+            f.write('submitted')
+            f.close()
+        #Sequence File
+        with open(os.path.join(inputFilePath, 'seqfile.txt'), 'w') as f:
+            f.write(seqchoice)
+            f.close()
+        newJob.jobParameters = '-s %s -o %s' % (os.path.join(inputFilePath, 'seqfile.txt'), inputFilePath)
+        '''        
+        if(not frzfile is None):
+            newJob.jobParameters += ' -f %s' % (frzfile)
+        '''
         #Input File
         with open(os.path.join(inputFilePath, inputFileName), 'w') as f:
             f.write('User %s\n' % newJob.user.username)
@@ -149,15 +167,10 @@ class wl_JobForm(forms.Form):
             f.write('Email %s\n' % newJob.user.email)
             f.write('JobName %s\n' % os.path.splitext(os.path.basename(inputFilePath))[0])
             f.write('JobType %s\n' % newJob.jobType)
-            f.write('JobExe %s\n' % settings.CAMPARI_PATH)
+            f.write('JobExe %s\n' % settings.WL_PATH)
             f.write('JobParameters %s\n' % newJob.jobParameters)
             f.write('OutDir %s\n' % newJob.outdir)
             f.close()
-        #Progress File
-        with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
-            f.write('submitted')
-            f.close()
-
         newJob.save()
         return newJob
 
@@ -192,6 +205,13 @@ class hetero_JobForm(forms.Form):
         inputFileName = "%d_%d_%s" % (newJob.user.pk, newJob.seq.pk, newJob.jobType)
         inputFilePath = os.path.normpath("%s/%d/%d/%s/" % (settings.DAEMON_IN_PATH, newJob.user.pk, newJob.seq.pk, newJob.jobType))
         create_path(inputFilePath)
+        #Progress File
+        with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
+            f.write('submitted')
+            f.close()
+        #Sequence File
+        seqFilePath = os.path.join(inputFilePath, 'seq.in')
+        comp.Sequence(seqchoice.seq).makeCampariSeqFile(seqFilePath)
         #Input File
         with open(os.path.join(inputFilePath, inputFileName), 'w') as f:
             f.write('User %s\n' % newJob.user.username)
@@ -204,13 +224,6 @@ class hetero_JobForm(forms.Form):
             f.write('JobParameters %s\n' % newJob.jobParameters)
             f.write('OutDir %s\n' % newJob.outdir)
             f.close()
-        #Progress File
-        with open(os.path.join(inputFilePath, 'progress.txt'), 'w') as f:
-            f.write('submitted')
-            f.close()
-        #Sequence File
-        seqFilePath = os.path.join(inputFilePath, 'seq.in')
-        comp.Sequence(seqchoice.seq).makeCampariSeqFile(seqFilePath)
 
         newJob.save()
         return newJob
